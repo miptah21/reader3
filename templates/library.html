@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Library</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #1a1a1a;
+            --card-bg: #ffffff;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --card-shadow-hover: 0 8px 24px rgba(0,0,0,0.12);
+            --title-color: #1a1a1a;
+            --meta-color: #6c757d;
+            --border-color: #e9ecef;
+            --btn-primary: #3498db;
+            --btn-primary-hover: #2980b9;
+            --btn-danger: #e74c3c;
+            --btn-danger-hover: #c0392b;
+            --btn-success: #27ae60;
+            --btn-success-hover: #229954;
+            --badge-finished: #27ae60;
+        }
+
+        body.dark-mode {
+            --bg-color: #0d1117;
+            --text-color: #e6edf3;
+            --card-bg: #161b22;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            --card-shadow-hover: 0 8px 24px rgba(0,0,0,0.5);
+            --title-color: #e6edf3;
+            --meta-color: #8b949e;
+            --border-color: #30363d;
+            --btn-primary: #58a6ff;
+            --btn-primary-hover: #79c0ff;
+            --btn-danger: #f85149;
+            --btn-danger-hover: #ff6b6b;
+            --btn-success: #3fb950;
+            --btn-success-hover: #56d364;
+            --badge-finished: #3fb950;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            padding: 0;
+            transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 { 
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--title-color);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .container { 
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        
+        .book-grid { 
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 0;
+        }
+        
+        .book-card { 
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-color);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--card-shadow-hover);
+        }
+        
+        .book-title { 
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--title-color);
+            margin-bottom: 8px;
+            line-height: 1.4;
+            min-height: 2.8em;
+        }
+        
+        .book-meta { 
+            color: var(--meta-color);
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+            flex: 1;
+        }
+        
+        .book-meta-item {
+            margin-bottom: 4px;
+        }
+        
+        .finished-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--badge-finished);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .book-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+        
+        .btn { 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: var(--btn-primary);
+            color: white;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .btn:hover { 
+            background: var(--btn-primary-hover);
+            transform: translateY(-1px);
+        }
+        
+        .btn-icon {
+            width: 36px;
+            padding: 10px;
+            flex: 0;
+        }
+        
+        .btn-danger {
+            background: var(--btn-danger);
+        }
+        
+        .btn-danger:hover {
+            background: var(--btn-danger-hover);
+        }
+        
+        .btn-success {
+            background: var(--btn-success);
+        }
+        
+        .btn-success:hover {
+            background: var(--btn-success-hover);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--border-color);
+            color: var(--text-color);
+        }
+        
+        .btn-outline:hover {
+            background: var(--border-color);
+            transform: translateY(-1px);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: 1.5px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--border-color);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--meta-color);
+        }
+        
+        .empty-state p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>📚 Library</h1>
+            <div class="header-actions">
+                <button class="btn" onclick="document.getElementById('file-upload').click()">
+                    <span>📤</span> Upload Book
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
+            </div>
+            <input type="file" id="file-upload" accept=".epub" onchange="uploadBook(this)">
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: var(--card-bg); border-radius: 12px; padding: 32px; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); border: 1px solid var(--border-color);">
+            <div style="font-size: 1.25rem; font-weight: 600; color: var(--title-color); margin-bottom: 12px;">⚠️ Delete Book</div>
+            <p style="color: var(--meta-color); margin-bottom: 24px; line-height: 1.5;">Are you sure you want to delete "<span id="delete-book-title" style="font-weight: 600; color: var(--title-color);"></span>"? This action cannot be undone.</p>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="closeDeleteModal()" class="btn btn-outline" style="flex: 0;">Cancel</button>
+                <button onclick="confirmDelete()" class="btn btn-danger" style="flex: 0;">Delete Book</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Progress Modal -->
+    <div id="upload-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: var(--card-bg); border-radius: 12px; padding: 32px; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); border: 1px solid var(--border-color);">
+            <div style="font-size: 1.25rem; font-weight: 600; color: var(--title-color); margin-bottom: 12px; text-align: center;">📤 Uploading Book</div>
+            <p id="upload-status" style="color: var(--meta-color); margin-bottom: 16px; text-align: center; font-size: 0.9em;">Preparing upload...</p>
+            <div style="background: var(--border-color); border-radius: 8px; height: 8px; overflow: hidden; margin-bottom: 12px;">
+                <div id="upload-progress-bar" style="background: var(--btn-primary); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+            </div>
+            <div id="upload-percentage" style="text-align: center; font-size: 0.85em; color: var(--meta-color); font-weight: 600;">0%</div>
+        </div>
+    </div>
+
+    <div class="container">
+        {% if not books %}
+            <div class="empty-state">
+                <p>No books in your library yet.</p>
+                <button class="btn" onclick="document.getElementById('file-upload').click()">
+                    <span>📤</span> Upload Your First Book
+                </button>
+            </div>
+        {% endif %}
+
+        <div class="book-grid">
+            {% for book in books %}
+            <div class="book-card">
+                {% if book.finished %}
+                <div class="finished-badge">
+                    <span>✓</span> Finished
+                </div>
+                {% endif %}
+                <div class="book-title">{{ book.title }}</div>
+                <div class="book-meta">
+                    <div class="book-meta-item">👤 {{ book.author or 'Unknown Author' }}</div>
+                    <div class="book-meta-item">📖 {{ book.chapters }} sections</div>
+                </div>
+                <div class="book-actions">
+                    <a href="/read/{{ book.id }}/0" class="btn">
+                        <span>📖</span> Read
+                    </a>
+                    <button class="btn-icon btn {% if book.finished %}btn-outline{% else %}btn-success{% endif %}" 
+                            onclick="toggleFinished('{{ book.id }}', {{ 'false' if book.finished else 'true' }})"
+                            title="{% if book.finished %}Mark as Unfinished{% else %}Mark as Finished{% endif %}">
+                        {% if book.finished %}✗{% else %}✓{% endif %}
+                    </button>
+                    <button class="btn-icon btn btn-danger delete-btn" 
+                            data-book-id="{{ book.id }}" 
+                            data-book-title="{{ book.title | replace('\"', '&quot;') }}" 
+                            title="Delete Book">
+                        🗑️
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        async function uploadBook(input) {
+            if (!input.files || input.files.length === 0) return;
+            
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Show progress modal
+            const modal = document.getElementById('upload-modal');
+            const statusEl = document.getElementById('upload-status');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const percentageEl = document.getElementById('upload-percentage');
+            
+            modal.style.display = 'flex';
+            statusEl.textContent = 'Uploading file...';
+            progressBar.style.width = '0%';
+            percentageEl.textContent = '0%';
+            
+            try {
+                const xhr = new XMLHttpRequest();
+                
+                // Track upload progress
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 50; // Upload is 50% of total
+                        progressBar.style.width = percentComplete + '%';
+                        percentageEl.textContent = Math.round(percentComplete) + '%';
+                    }
+                });
+                
+                // Handle completion
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200) {
+                        statusEl.textContent = 'Processing book...';
+                        progressBar.style.width = '75%';
+                        percentageEl.textContent = '75%';
+                        
+                        setTimeout(() => {
+                            progressBar.style.width = '100%';
+                            percentageEl.textContent = '100%';
+                            statusEl.textContent = 'Complete! Reloading...';
+                            
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 500);
+                        }, 1000);
+                    } else {
+                        const data = JSON.parse(xhr.responseText);
+                        modal.style.display = 'none';
+                        alert("Error: " + (data.detail || "Upload failed"));
+                    }
+                });
+                
+                xhr.addEventListener('error', () => {
+                    modal.style.display = 'none';
+                    alert("Network error during upload");
+                });
+                
+                xhr.open('POST', '/upload');
+                xhr.send(formData);
+                
+            } catch (e) {
+                modal.style.display = 'none';
+                alert("Error: " + e.message);
+            } finally {
+                input.value = '';
+            }
+        }
+
+        let bookToDelete = null;
+
+        function deleteBook(bookId, bookTitle) {
+            bookToDelete = bookId;
+            document.getElementById('delete-book-title').textContent = bookTitle;
+            document.getElementById('delete-modal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').style.display = 'none';
+            bookToDelete = null;
+        }
+
+        async function confirmDelete() {
+            if (!bookToDelete) return;
+            
+            const bookId = bookToDelete;
+            closeDeleteModal();
+            
+            try {
+                const res = await fetch(`/books/${bookId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    window.location.reload();
+                } else {
+                    alert("Error: " + (data.detail || "Delete failed"));
+                }
+            } catch (e) {
+                alert("Network error: " + e.message);
+            }
+        }
+
+        async function toggleFinished(bookId, finished) {
+            try {
+                const res = await fetch(`/books/${bookId}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ finished: finished })
+                });
+                
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    window.location.reload();
+                } else {
+                    alert("Error: " + (data.detail || "Status update failed"));
+                }
+            } catch (e) {
+                alert("Network error: " + e.message);
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // Initialize theme
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else if (!savedTheme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add('dark-mode');
+            }
+        })();
+
+        // Setup delete button event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const bookId = this.getAttribute('data-book-id');
+                    const bookTitle = this.getAttribute('data-book-title');
+                    deleteBook(bookId, bookTitle);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

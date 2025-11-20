@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ book.metadata.title }}</title>
+    <style>
+        :root {
+            --bg-color: #fff;
+            --text-color: #212529;
+            --sidebar-bg: #f8f9fa;
+            --sidebar-border: #e9ecef;
+            --sidebar-text: #495057;
+            --link-color: #3498db;
+            --link-hover: #000;
+            --active-link: #d63384;
+            --heading-color: #333;
+            --nav-border: #eee;
+            --btn-border: #3498db;
+            --btn-hover-bg: #3498db;
+            --btn-hover-text: white;
+            --disabled-color: #ccc;
+            
+            /* --- WARNA HIGHLIGHT --- */
+            --highlight-bg: #ffeb3b; 
+            --highlight-border: #fbc02d;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #d0d0d0;
+            --sidebar-bg: #1e1e1e;
+            --sidebar-border: #333;
+            --sidebar-text: #b0b0b0;
+            --link-color: #4fa3d1;
+            --link-hover: #fff;
+            --active-link: #ff79c6;
+            --heading-color: #fff;
+            --nav-border: #333;
+            --btn-border: #4fa3d1;
+            --btn-hover-bg: #4fa3d1;
+            --btn-hover-text: #121212;
+            --disabled-color: #555;
+
+            /* --- WARNA HIGHLIGHT DARK MODE --- */
+            --highlight-bg: #6c6404; 
+            --highlight-border: #827717;
+        }
+
+        /* =========================================
+           SCROLLBAR STYLING (Diambil dari request Anda)
+           ========================================= */
+        
+        /* Sidebar Scrollbar */
+        #sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+        #sidebar::-webkit-scrollbar-track {
+            background: var(--sidebar-bg);
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: var(--sidebar-border);
+            border-radius: 4px;
+        }
+        #sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--sidebar-text);
+        }
+
+        /* Main Content Scrollbar */
+        #main::-webkit-scrollbar {
+            width: 10px;
+        }
+        #main::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        #main::-webkit-scrollbar-thumb {
+            background: var(--btn-border); /* Warna Biru */
+            border-radius: 5px;
+        }
+        #main::-webkit-scrollbar-thumb:hover {
+            background: var(--link-color);
+        }
+
+        /* =========================================
+           LAYOUT & BASIC STYLES
+           ========================================= */
+
+        body { margin: 0; padding: 0; height: 100vh; overflow: hidden; font-family: "Georgia", serif; background: var(--bg-color); color: var(--text-color); transition: background 0.3s, color 0.3s; }
+
+        /* Sidebar Layout */
+        #sidebar { width: 300px; background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); overflow-y: auto; padding: 20px; flex-shrink: 0; position: fixed; left: 0; top: 0; bottom: 0; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 10; }
+        body.sidebar-hidden #sidebar { transform: translateX(-100%); }
+        .nav-header { font-family: -apple-system, sans-serif; font-weight: bold; color: var(--sidebar-text); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--sidebar-border); }
+        .nav-home { display: block; margin-bottom: 10px; color: var(--link-color); text-decoration: none; font-size: 0.9em; }
+
+        /* Toggle Button */
+        .sidebar-toggle-btn {
+            position: fixed; top: 20px; left: 360px; z-index: 1000;
+            background: var(--bg-color); border: 1px solid var(--btn-border);
+            color: var(--link-color); padding: 8px 12px; border-radius: 4px;
+            cursor: pointer; font-family: -apple-system, sans-serif;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        body.sidebar-hidden .sidebar-toggle-btn { left: 20px; }
+        .sidebar-toggle-btn:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); transform: scale(1.05); }
+
+        /* TOC */
+        ul.toc-list { list-style: none; padding-left: 0; margin: 0; }
+        ul.toc-list ul { padding-left: 20px; }
+        li.toc-item { margin-bottom: 8px; }
+        a.toc-link { text-decoration: none; color: var(--sidebar-text); font-size: 0.95em; display: block; padding: 4px 0; line-height: 1.4; }
+        a.toc-link:hover { color: var(--link-hover); text-decoration: underline; }
+        a.toc-link.active { color: var(--active-link); font-weight: bold; }
+
+        /* Main Content Layout */
+        #main { position: fixed; top: 0; bottom: 0; right: 0; overflow-y: auto; scroll-behavior: smooth; margin-left: 300px; transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1); width: calc(100% - 300px); }
+        body.sidebar-hidden #main { margin-left: 0; width: 100%; }
+        .content-container { max-width: 700px; margin: 0 auto; padding: 60px 40px; line-height: 1.8; font-size: 1.15em; }
+        .book-content img { max-width: 100%; height: auto; display: block; margin: 20px auto; }
+        .book-content h1, .book-content h2 { font-family: -apple-system, sans-serif; margin-top: 1.5em; color: var(--heading-color); }
+        .book-content p { margin-bottom: 1.5em; text-align: justify; }
+
+        /* Footer Nav */
+        .chapter-nav { display: flex; justify-content: space-between; margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--nav-border); font-family: -apple-system, sans-serif; }
+        .nav-btn { text-decoration: none; color: var(--link-color); font-weight: bold; padding: 10px 20px; border: 1px solid var(--btn-border); border-radius: 4px; }
+        .nav-btn:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
+        .nav-btn.disabled { opacity: 0.5; pointer-events: none; border-color: var(--disabled-color); color: var(--disabled-color); }
+        
+        .theme-toggle { display: block; width: 100%; text-align: left; background: none; border: 1px solid var(--sidebar-border); color: var(--sidebar-text); padding: 8px; margin-bottom: 20px; border-radius: 4px; cursor: pointer; }
+
+        /* HIGHLIGHT MARKER STYLE */
+        .highlight-marker {
+            background-color: var(--highlight-bg);
+            border-bottom: 2px solid var(--highlight-border);
+            color: inherit; cursor: pointer; border-radius: 2px; padding: 0 2px; transition: opacity 0.2s;
+        }
+        body.dark-mode .highlight-marker { color: #fff; }
+        .highlight-marker:hover { opacity: 0.8; }
+
+        /* --- POPUP STYLING --- */
+        #translation-popup {
+            position: absolute; display: none;
+            background: var(--bg-color); border: 1px solid var(--btn-border);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            padding: 0; border-radius: 8px; z-index: 9999;
+            min-width: 320px; max-width: 400px;
+            font-family: -apple-system, sans-serif; font-size: 0.95em;
+            overflow: hidden;
+        }
+        #translation-popup .popup-header {
+            display: flex; align-items: center; gap: 8px;
+            cursor: move; user-select: none;
+            background: var(--sidebar-bg);
+            padding: 10px 12px; border-bottom: 1px solid var(--sidebar-border);
+        }
+        #translation-popup .popup-header label { font-size: 0.85em; white-space: nowrap; cursor: move; }
+        #translation-popup select {
+            flex: 1; background: var(--bg-color); color: var(--text-color);
+            border: 1px solid var(--sidebar-border); padding: 4px 8px; border-radius: 4px;
+        }
+        #translation-popup .popup-body { padding: 12px; }
+        
+        /* Popup Scrollbar (Specific Override) */
+        #translation-popup .popup-content {
+            margin-bottom: 10px; color: var(--text-color); line-height: 1.5;
+            max-height: 200px; overflow-y: auto; padding-right: 5px;
+            scrollbar-width: thin; scrollbar-color: var(--sidebar-border) var(--bg-color);
+        }
+        #translation-popup .popup-content::-webkit-scrollbar { width: 6px; }
+        #translation-popup .popup-content::-webkit-scrollbar-track { background: transparent; }
+        #translation-popup .popup-content::-webkit-scrollbar-thumb { background: var(--sidebar-border); border-radius: 3px; }
+
+        /* TEXTAREA NOTE */
+        #note-input {
+            width: 100%; height: 80px; box-sizing: border-box;
+            background: var(--sidebar-bg); color: var(--text-color);
+            border: 1px solid var(--sidebar-border);
+            border-radius: 4px; padding: 8px;
+            margin-bottom: 10px; font-family: inherit; resize: vertical;
+            display: none;
+    <div id="sidebar">
+        <a href="/" class="nav-home">← Back to Library</a>
+        <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
+        <div class="nav-header">{{ book.metadata.title }}</div>
+        {% macro render_toc(items) %}
+            <ul class="toc-list">
+            {% for item in items %}
+                <li class="toc-item">
+                    {% set is_active = current_chapter.href == item.file_href %}
+                    <a href="#" onclick="findAndGo('{{ item.file_href }}')" class="toc-link {% if is_active %}active{% endif %}">{{ item.title }}</a>
+                    {% if item.children %}{{ render_toc(item.children) }}{% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        {% endmacro %}
+        {{ render_toc(book.toc) }}
+    </div>
+
+    <div id="main">
+        <button class="sidebar-toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div class="content-container">
+            <div class="book-content" id="book-content-area">
+                {{ current_chapter.content | safe }}
+            </div>
+            <div class="chapter-nav">
+                {% if prev_idx is not none %}<a href="/read/{{ book_id }}/{{ prev_idx }}" class="nav-btn">← Previous</a>{% else %}<span class="nav-btn disabled">← Previous</span>{% endif %}
+                <span style="color: #999; padding: 10px;">Section {{ chapter_index + 1 }} of {{ book.spine|length }}</span>
+                {% if next_idx is not none %}<a href="/read/{{ book_id }}/{{ next_idx }}" class="nav-btn">Next →</a>{% else %}<span class="nav-btn disabled">Next →</span>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div id="translation-popup">
+        <div class="popup-header" id="popup-drag-handle">
+            <label id="popup-title">Tools:</label>
+            <select id="target-lang">
+                <option value="id">Indonesian</option>
+                <option value="en">English</option>
+                <option value="zh-CN">Chinese (Simplified)</option>
+                <option value="zh-TW">Chinese (Traditional)</option>
+                <option value="ja">Japanese</option>
+                <option value="ko">Korean</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="ar">Arabic</option>
+                <option value="ru">Russian</option>
+                <option value="pt">Portuguese</option>
+                <option value="it">Italian</option>
+                <option value="nl">Dutch</option>
+                <option value="tr">Turkish</option>
+                <option value="vi">Vietnamese</option>
+                <option value="th">Thai</option>
+                <option value="hi">Hindi</option>
+            </select>
+        </div>
+        <div class="popup-body">
+            <div class="popup-content" id="popup-text">Select text to translate or highlight.</div>
+            
+            <textarea id="note-input" placeholder="Tulis catatan Anda di sini..."></textarea>
+
+            <div class="popup-actions" id="default-actions">
+                <button class="highlight-btn" onclick="modeHighlight()">🖊 Highlight</button>
+                <button onclick="translateSelection()">Translate</button>
+                <button class="secondary-btn" onclick="hidePopup()">Close</button>
+            </div>
+
+            <div class="popup-actions" id="note-actions" style="display:none;">
+                <button class="delete-btn" id="btn-delete" onclick="deleteHighlight()" style="display:none; margin-right:auto;">Delete</button>
+                <button class="highlight-btn" onclick="saveHighlight()">Save Note</button>
+                <button class="secondary-btn" onclick="cancelNote()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIG & STATE ---
+        const spineMap = { {% for ch in book.spine %} "{{ ch.href }}": {{ ch.order }}, {% endfor %} };
+        const STORAGE_KEY = `highlights_{{ book_id }}_{{ chapter_index }}`;
+        
+        // Variable References for UI
+        const els = {
+            popup: document.getElementById('translation-popup'),
+            header: document.getElementById('popup-drag-handle'),
+            text: document.getElementById('popup-text'),
+            input: document.getElementById('note-input'),
+            actDefault: document.getElementById('default-actions'),
+            actNote: document.getElementById('note-actions'),
+            btnDel: document.getElementById('btn-delete'),
+            langSelect: document.getElementById('target-lang'),
+            contentArea: document.getElementById('book-content-area')
+        };
+
+        let state = {
+            selectedText: "",
+            highlightId: null,
+            isDragging: false,
+            dragOffset: { x:0, y:0 }
+        };
+
+        // --- NAVIGATION & THEME ---
+        function findAndGo(filename) {
+            const cleanFile = filename.split('#')[0];
+            const idx = spineMap[cleanFile];
+            if (idx !== undefined) window.location.href = "/read/{{ book_id }}/" + idx;
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+        
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-hidden');
+            localStorage.setItem('sidebar-hidden', document.body.classList.contains('sidebar-hidden') ? 'true' : 'false');
+        }
+
+        // Restore Theme/Sidebar State
+        if(localStorage.getItem('theme')==='dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.body.classList.add('dark-mode');
+        if(localStorage.getItem('sidebar-hidden')==='true') document.body.classList.add('sidebar-hidden');
+        if(localStorage.getItem('translation-lang')) els.langSelect.value = localStorage.getItem('translation-lang');
+
+
+        // --- DRAG LOGIC ---
+        els.header.onmousedown = e => {
+            if(e.target.tagName === 'SELECT' || e.target.tagName === 'OPTION') return;
+            e.preventDefault();
+            state.isDragging = true;
+            const rect = els.popup.getBoundingClientRect();
+            state.dragOffset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        };
+        document.onmousemove = e => {
+            if(!state.isDragging) return;
+            e.preventDefault();
+            const x = e.clientX - state.dragOffset.x + (window.pageXOffset || document.documentElement.scrollLeft);
+            const y = e.clientY - state.dragOffset.y + (window.pageYOffset || document.documentElement.scrollTop);
+            els.popup.style.left = x + 'px';
+            els.popup.style.top = y + 'px';
+        };
+        document.onmouseup = () => { state.isDragging = false; };
+
+
+        // --- SELECTION & CLICK LOGIC ---
+        document.addEventListener('mouseup', (e) => {
+            if(state.isDragging) return;
+            if(els.popup.contains(e.target)) return;
+
+            // 1. Click on Existing Highlight
+            if(e.target.classList.contains('highlight-marker')) {
+                openExistingNote(e.target);
+                return;
+            }
+
+            // 2. New Text Selection
+            const selection = window.getSelection();
+            const text = selection.toString().trim();
+            
+            if(text.length > 0) {
+                state.selectedText = text;
+                state.highlightId = null;
+                resetPopupUI();
+
+                // Position Popup
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+                const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+                
+                els.popup.style.left = `${rect.left + scrollX}px`;
+                els.popup.style.top = `${rect.bottom + scrollY + 10}px`;
+                els.popup.style.display = 'block';
+                els.text.innerText = "Selected: \"" + text.substring(0, 20) + "...\"";
+            } else {
+                hidePopup();
+            }
+        });
+
+        function hidePopup() {
+            els.popup.style.display = 'none';
+            state.selectedText = "";
+            state.highlightId = null;
+            window.getSelection().removeAllRanges();
+        }
+
+        function resetPopupUI() {
+            els.text.style.display = 'block';
+            els.input.style.display = 'none';
+            els.actDefault.style.display = 'flex';
+            els.actNote.style.display = 'none';
+            els.langSelect.style.visibility = 'visible';
+            els.input.value = "";
+            els.btnDel.style.display = 'none';
+        }
+
+        // --- TRANSLATE ---
+        async function translateSelection() {
+            if (!state.selectedText) return;
+            const targetLang = els.langSelect.value;
+            els.text.innerText = "Translating...";
+            try {
+                const res = await fetch('/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: state.selectedText, target_lang: targetLang })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    els.text.innerText = data.translated_text;
+                    localStorage.setItem('translation-lang', targetLang);
+                } else { els.text.innerText = "Error translating."; }
+            } catch (e) { els.text.innerText = "Network error."; }
+        }
+
+        // --- HIGHLIGHT ACTIONS ---
+        function modeHighlight() {
+            els.text.style.display = 'none';
+            els.langSelect.style.visibility = 'hidden';
+            els.actDefault.style.display = 'none';
+            els.input.style.display = 'block';
+            els.actNote.style.display = 'flex';
+            els.input.focus();
+        }
+
+        function cancelNote() {
+            if(state.highlightId) hidePopup();
+            else resetPopupUI();
+        }
+
+        function saveHighlight() {
+            const noteContent = els.input.value;
+            const hlId = state.highlightId || 'hl-' + Date.now();
+
+            if (!state.highlightId) {
+                // NEW Highlight
+                const sel = window.getSelection();
+                if (!sel.rangeCount) return;
+                
+                try {
+                    const range = sel.getRangeAt(0);
+                    const span = document.createElement('span');
+                    span.className = 'highlight-marker';
+                    span.id = hlId;
+                    span.onclick = function(e) { e.stopPropagation(); openExistingNote(this); };
+                    range.surroundContents(span);
+                } catch (e) {
+                    alert("Mohon pilih teks dalam satu paragraf saja (tidak lintas elemen).");
+                    return;
+                }
+            }
+
+            // Save & Close
+            saveToStorage(hlId, state.selectedText, noteContent);
+            hidePopup();
+        }
+
+        function openExistingNote(element) {
+            const id = element.id;
+            const data = loadFromStorage();
+            const item = data[id];
+
+            state.selectedText = item ? item.text : element.innerText;
+            state.highlightId = id;
+            els.input.value = item ? item.note : "";
+
+            // Position Popup
+            const rect = element.getBoundingClientRect();
+            const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+            const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+            els.popup.style.left = `${rect.left + scrollX}px`;
+            els.popup.style.top = `${rect.bottom + scrollY + 10}px`;
+            els.popup.style.display = 'block';
+
+            modeHighlight();
+            els.btnDel.style.display = 'inline-block'; // Show delete button
+        }
+
+        function deleteHighlight() {
+            if (!state.highlightId) return;
+            
+            // Remove from Storage
+            const data = loadFromStorage();
+            delete data[state.highlightId];
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+            // Remove from DOM
+            const el = document.getElementById(state.highlightId);
+            if (el) {
+                const parent = el.parentNode;
+                while (el.firstChild) parent.insertBefore(el.firstChild, el);
+                parent.removeChild(el);
+                parent.normalize();
+            }
+            hidePopup();
+        }
+
+        // --- STORAGE HELPERS ---
+        function loadFromStorage() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : {};
+        }
+
+        function saveToStorage(id, text, note) {
+            const data = loadFromStorage();
+            data[id] = { text, note };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // --- RESTORE LOGIC (ROBUST) ---
+        function restoreHighlights() {
+            const data = loadFromStorage();
+            const root = els.contentArea;
+            if (!root) return;
+
+            Object.keys(data).forEach(id => {
+                if (document.getElementById(id)) return; // Already restored
+                const item = data[id];
+                
+                // TreeWalker to find text node
+                const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+                let node;
+                while(node = walker.nextNode()) {
+                    const idx = node.nodeValue.indexOf(item.text);
+                    // Ensure we don't wrap inside an existing highlight
+                    if(idx !== -1 && node.parentNode.className !== 'highlight-marker') {
+                        try {
+                            const range = document.createRange();
+                            range.setStart(node, idx);
+                            range.setEnd(node, idx + item.text.length);
+                            
+                            const span = document.createElement('span');
+                            span.className = 'highlight-marker';
+                            span.id = id;
+                            span.onclick = function(e) { e.stopPropagation(); openExistingNote(this); };
+                            
+                            range.surroundContents(span);
+                            break; // Stop after finding match
+                        } catch(e) { console.warn("Restore skip", id); }
+                    }
+                }
+            });
+        }
+
+        // Run Restore
+        setTimeout(restoreHighlights, 500);
+
+    </script>
+</body>
+</html>
