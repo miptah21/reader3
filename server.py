@@ -6,12 +6,10 @@ from functools import lru_cache
 from typing import Optional
 from fastapi import FastAPI, Request, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from deep_translator import GoogleTranslator
-import google.generativeai as genai
-from groq import Groq
+
 from dotenv import load_dotenv
 
 from reader3 import Book, BookMetadata, ChapterContent, TOCEntry, process_epub, save_to_pickle
@@ -21,49 +19,12 @@ load_dotenv()
 
 # --- CONFIG ---
 BOOKS_DIR = "."
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-AI_PROVIDER = os.getenv("AI_PROVIDER", "gemini") # gemini or groq
 
-# Initialize AI Models
-gemini_model = None
-groq_client = None
-
-def init_ai():
-    global gemini_model, groq_client, GEMINI_API_KEY, GROQ_API_KEY, AI_PROVIDER
-    
-    # Force reload from .env
-    load_dotenv(override=True)
-    
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-    AI_PROVIDER = os.getenv("AI_PROVIDER", "gemini")
-
-    gemini_model = None
-    groq_client = None
-
-    if GEMINI_API_KEY:
-        try:
-            genai.configure(api_key=GEMINI_API_KEY)
-            gemini_model = genai.GenerativeModel('gemini-pro')
-        except Exception as e:
-            print(f"Gemini init error: {e}")
-
-    if GROQ_API_KEY:
-        try:
-            groq_client = Groq(api_key=GROQ_API_KEY)
-        except Exception as e:
-            print(f"Groq init error: {e}")
-
-init_ai()
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# Ensure static directory exists
-if not os.path.exists("static"):
-    os.makedirs("static")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 @lru_cache(maxsize=10)
 def load_book_cached(folder_name: str) -> Optional[Book]:
@@ -233,138 +194,7 @@ async def translate_text(request: TranslationRequest):
         print(f"Translation error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-class ChatRequest(BaseModel):
-    message: str
-    book_id: str
-    chapter_index: int
-    conversation_history: list = []
-    selected_text: Optional[str] = None
 
-@app.post("/chat")
-async def chat_with_ai(request: ChatRequest):
-    """AI chat endpoint supporting multiple providers."""
-    
-    # Load book context
-    book = load_book_cached(request.book_id)
-    if not book:
-        raise HTTPException(status_code=404, detail="Book not found")
-    
-    if request.chapter_index < 0 or request.chapter_index >= len(book.spine):
-        raise HTTPException(status_code=404, detail="Chapter not found")
-    
-    current_chapter = book.spine[request.chapter_index]
-    
-    # Build Context
-    context_text = f"""You are a helpful reading assistant. The user is currently reading:
-Book: {book.metadata.title}
-Author(s): {', '.join(book.metadata.authors)}
-Current Chapter: {current_chapter.title if hasattr(current_chapter, 'title') else f'Chapter {request.chapter_index + 1}'}
-
-Chapter Content (excerpt):
-{current_chapter.content[:2000]}...
-"""
-
-    if request.selected_text:
-        context_text += f"\n\nUSER SELECTED TEXT:\n\"{request.selected_text}\"\n(The user is asking specifically about this text)"
-
-    context_text += "\n\nPlease answer the user's questions about this book or chapter. Be concise and helpful."
-
-    try:
-        if AI_PROVIDER == "groq":
-            if not groq_client:
-                 raise HTTPException(status_code=503, detail="Groq API Key not configured.")
-            
-            messages = [{"role": "system", "content": context_text}]
-            # Add history
-            for msg in request.conversation_history[-6:]:
-                role = "user" if msg["role"] == "user" else "assistant"
-                messages.append({"role": role, "content": msg["content"]})
-            
-            messages.append({"role": "user", "content": request.message})
-            
-            completion = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=messages,
-                temperature=0.7,
-                max_tokens=1024,
-            )
-            response_text = completion.choices[0].message.content
-            
-        else: # Default to Gemini
-            if not gemini_model:
-                raise HTTPException(status_code=503, detail="Gemini API Key not configured.")
-                
-            conversation = []
-            conversation.append({"role": "user", "parts": [context_text]})
-            conversation.append({"role": "model", "parts": ["I understand. I'm ready to help."]})
-            
-            for msg in request.conversation_history[-6:]:
-                conversation.append({
-                    "role": "user" if msg["role"] == "user" else "model",
-                    "parts": [msg["content"]]
-                })
-            
-            conversation.append({"role": "user", "parts": [request.message]})
-            
-            chat = gemini_model.start_chat(history=conversation[:-1])
-            response = chat.send_message(request.message)
-            response_text = response.text
-
-        return {"response": response_text, "success": True}
-
-    except Exception as e:
-        print(f"Chat error ({AI_PROVIDER}): {e}")
-        raise HTTPException(status_code=500, detail=f"AI Error ({AI_PROVIDER}): {str(e)}")
-
-class ConfigRequest(BaseModel):
-    api_key: str
-    provider: str = "gemini"
-
-@app.post("/config/api-key")
-async def set_api_key(request: ConfigRequest):
-    """Updates API key and Provider in .env"""
-    try:
-        env_path = os.path.join(os.path.dirname(__file__), ".env")
-        
-        # Read existing
-        lines = []
-        if os.path.exists(env_path):
-            with open(env_path, "r") as f:
-                lines = f.readlines()
-        
-        env_map = {}
-        for line in lines:
-            if '=' in line:
-                k, v = line.strip().split('=', 1)
-                env_map[k] = v
-        
-        # Update values in map AND os.environ
-        if request.provider == "groq":
-            env_map["GROQ_API_KEY"] = request.api_key
-            env_map["AI_PROVIDER"] = "groq"
-            
-            os.environ["GROQ_API_KEY"] = request.api_key
-            os.environ["AI_PROVIDER"] = "groq"
-        else: # Default to Gemini
-            env_map["GEMINI_API_KEY"] = request.api_key
-            env_map["AI_PROVIDER"] = "gemini"
-            
-            os.environ["GEMINI_API_KEY"] = request.api_key
-            os.environ["AI_PROVIDER"] = "gemini"
-            
-        # Write back
-        with open(env_path, "w") as f:
-            for k, v in env_map.items():
-                f.write(f"{k}={v}\n")
-        
-        # Reload
-        init_ai()
-        
-        return {"success": True, "message": f"Switched to {request.provider} and updated key"}
-        
-    except Exception as e:
-        print(f"Config error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/books/{book_id}")
 async def delete_book(book_id: str):

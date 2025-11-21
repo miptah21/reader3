@@ -97,26 +97,6 @@ reader3/
 Images are automatically optimized during upload:
 - **Max Width**: 800px (maintains aspect ratio)
 - **Quality**: 65% JPEG compression
-- **Format**: Converts to JPEG for smaller size
-- **Logging**: Shows compression ratio in console
-
-## 🔧 Configuration
-
-### Environment Variables
-Create a `.env` file for optional features:
-
-```env
-# AI Chat (Optional - removed in current version)
-GEMINI_API_KEY=your_key_here
-GROQ_API_KEY=your_key_here
-AI_PROVIDER=gemini
-```
-
-### Customization
-- **Image Quality**: Edit `max_width` and `quality` in `reader3.py` line 71
-- **Server Port**: Change port in `server.py` line 306
-- **Theme Colors**: Modify CSS variables in `library.html` and `reader.html`
-
 ## 📦 Dependencies
 
 - **FastAPI**: Web framework
