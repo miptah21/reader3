@@ -3,7 +3,7 @@ import shutil
 import pickle
 import json
 from functools import lru_cache
-from typing import Optional, List, Dict
+from typing import Optional
 from fastapi import FastAPI, Request, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -130,11 +130,13 @@ async def library_view(request: Request):
 @app.post("/upload")
 async def upload_book(file: UploadFile = File(...)):
     """Uploads and processes an EPUB file."""
-    if not file.filename.lower().endswith(".epub"):
+    if not file.filename or not file.filename.lower().endswith(".epub"):
         raise HTTPException(status_code=400, detail="Only .epub files are allowed")
     
     # Sanitize filename to prevent directory traversal or weird chars
     safe_filename = "".join([c for c in file.filename if c.isalpha() or c.isdigit() or c in '._-']).strip()
+    if not safe_filename:
+        safe_filename = "uploaded_book.epub"
     temp_filename = f"temp_{safe_filename}"
     
     try:
@@ -168,9 +170,9 @@ async def upload_book(file: UploadFile = File(...)):
                 pass
 
 @app.get("/read/{book_id}", response_class=HTMLResponse)
-async def redirect_to_first_chapter(book_id: str):
+async def redirect_to_first_chapter(request: Request, book_id: str):
     """Helper to just go to chapter 0."""
-    return await read_chapter(book_id=book_id, chapter_index=0)
+    return await read_chapter(request=request, book_id=book_id, chapter_index=0)
 
 @app.get("/read/{book_id}/{chapter_index}", response_class=HTMLResponse)
 async def read_chapter(request: Request, book_id: str, chapter_index: int):

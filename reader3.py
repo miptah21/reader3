@@ -6,7 +6,7 @@ import os
 import pickle
 import shutil
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional
 from datetime import datetime
 from urllib.parse import unquote
 
@@ -282,7 +282,7 @@ def process_epub(epub_path: str, output_dir: str) -> Book:
                 if not src: continue
 
                 # Decode URL (part01/image%201.jpg -> part01/image 1.jpg)
-                src_decoded = unquote(src)
+                src_decoded = unquote(str(src))
                 filename = os.path.basename(src_decoded)
 
                 # Try to find in map

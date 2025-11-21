@@ -128,6 +128,16 @@ AI_PROVIDER=gemini
 - **deep-translator**: Text translation
 - **python-multipart**: File upload handling
 
+## 🛠️ Development
+
+### Type Checking
+This project uses **Pyrefly** for static type checking.
+
+```bash
+pip install pyrefly
+pyrefly check .
+```
+
 ## 🎯 Usage Tips
 
 1. **Upload Progress**: Large books may take 30-60 seconds to process

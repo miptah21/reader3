@@ -4,199 +4,359 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ book.metadata.title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #fff;
-            --text-color: #212529;
+            /* --- COMFY LIGHT THEME --- */
+            --bg-color: #fdfbf7; /* Warm Rice Paper */
+            --text-color: #2d3436;
             --sidebar-bg: #f8f9fa;
-            --sidebar-border: #e9ecef;
-            --sidebar-text: #495057;
-            --link-color: #3498db;
-            --link-hover: #000;
-            --active-link: #d63384;
-            --heading-color: #333;
-            --nav-border: #eee;
-            --btn-border: #3498db;
-            --btn-hover-bg: #3498db;
-            --btn-hover-text: white;
-            --disabled-color: #ccc;
+            --sidebar-border: rgba(0,0,0,0.05);
+            --sidebar-text: #636e72;
             
-            /* --- WARNA HIGHLIGHT --- */
-            --highlight-bg: #ffeb3b; 
-            --highlight-border: #fbc02d;
+            --link-color: #2e86de;
+            --link-hover: #0984e3;
+            --active-link: #e17055;
+            
+            --heading-color: #2d3436;
+            --nav-border: rgba(0,0,0,0.05);
+            
+            --btn-bg: #ffffff;
+            --btn-border: #dfe6e9;
+            --btn-hover-bg: #f1f2f6;
+            --btn-text: #2d3436;
+            
+            --highlight-bg: rgba(255, 234, 167, 0.5); 
+            --highlight-border: #fdcb6e;
+            
+            --popup-bg: #ffffff;
+            --popup-shadow: 0 10px 40px rgba(0,0,0,0.15);
         }
 
         body.dark-mode {
-            --bg-color: #121212;
-            --text-color: #d0d0d0;
-            --sidebar-bg: #1e1e1e;
-            --sidebar-border: #333;
-            --sidebar-text: #b0b0b0;
-            --link-color: #4fa3d1;
-            --link-hover: #fff;
-            --active-link: #ff79c6;
-            --heading-color: #fff;
-            --nav-border: #333;
-            --btn-border: #4fa3d1;
-            --btn-hover-bg: #4fa3d1;
-            --btn-hover-text: #121212;
-            --disabled-color: #555;
-
-            /* --- WARNA HIGHLIGHT DARK MODE --- */
-            --highlight-bg: #6c6404; 
-            --highlight-border: #827717;
-        }
-
-        /* =========================================
-           SCROLLBAR STYLING
-           ========================================= */
-        
-        /* Sidebar Scrollbar */
-        #sidebar::-webkit-scrollbar {
-            width: 8px;
-        }
-        #sidebar::-webkit-scrollbar-track {
-            background: var(--sidebar-bg);
-        }
-        #sidebar::-webkit-scrollbar-thumb {
-            background: var(--sidebar-border);
-            border-radius: 4px;
-        }
-        #sidebar::-webkit-scrollbar-thumb:hover {
-            background: var(--sidebar-text);
-        }
-
-        /* Main Content Scrollbar */
-        #main::-webkit-scrollbar {
-            width: 10px;
-        }
-        #main::-webkit-scrollbar-track {
-            background: var(--bg-color);
-        }
-        #main::-webkit-scrollbar-thumb {
-            background: var(--btn-border);
-            border-radius: 5px;
-        }
-        #main::-webkit-scrollbar-thumb:hover {
-            background: var(--link-color);
+            /* --- COMFY DARK THEME --- */
+            --bg-color: #202124;
+            --text-color: #dfe6e9;
+            --sidebar-bg: #2d2e32;
+            --sidebar-border: rgba(255,255,255,0.05);
+            --sidebar-text: #b2bec3;
+            
+            --link-color: #74b9ff;
+            --link-hover: #a29bfe;
+            --active-link: #fab1a0;
+            
+            --heading-color: #dfe6e9;
+            --nav-border: rgba(255,255,255,0.1);
+            
+            --btn-bg: #2d2e32;
+            --btn-border: #636e72;
+            --btn-hover-bg: #353b48;
+            --btn-text: #dfe6e9;
+            
+            --highlight-bg: rgba(253, 203, 110, 0.3); 
+            --highlight-border: #e17055;
+            
+            --popup-bg: #2d2e32;
+            --popup-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
 
         /* =========================================
            LAYOUT & BASIC STYLES
            ========================================= */
 
-        body { margin: 0; padding: 0; min-height: 100vh; font-family: "Georgia", serif; background: var(--bg-color); color: var(--text-color); transition: background 0.3s, color 0.3s; }
+        body { 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh; 
+            font-family: "Merriweather", serif; 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            transition: background 0.4s ease, color 0.4s ease; 
+            overflow-x: hidden;
+        }
 
         /* Sidebar Layout */
-        #sidebar { width: 300px; background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); overflow-y: auto; padding: 20px; flex-shrink: 0; position: fixed; left: 0; top: 0; bottom: 0; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 10; }
-        body.sidebar-hidden #sidebar { transform: translateX(-100%); }
-        .nav-header { font-family: -apple-system, sans-serif; font-weight: bold; color: var(--sidebar-text); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--sidebar-border); }
-        .nav-home { display: block; margin-bottom: 10px; color: var(--link-color); text-decoration: none; font-size: 0.9em; }
-
-        /* Toggle Button */
-        .sidebar-toggle-btn {
-            position: fixed; top: 20px; left: 360px; z-index: 1000;
-            background: var(--bg-color); border: 1px solid var(--btn-border);
-            color: var(--link-color); padding: 8px 12px; border-radius: 4px;
-            cursor: pointer; font-family: -apple-system, sans-serif;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        #sidebar { 
+            width: 320px; 
+            background: var(--sidebar-bg); 
+            border-right: 1px solid var(--sidebar-border); 
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding: 30px 20px; 
+            flex-shrink: 0; 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            bottom: 0; 
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            z-index: 50;
+            font-family: 'Inter', sans-serif;
         }
-        body.sidebar-hidden .sidebar-toggle-btn { left: 20px; }
-        .sidebar-toggle-btn:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); transform: scale(1.05); }
+        
+        body.sidebar-hidden #sidebar { transform: translateX(-100%); }
+        
+        .sidebar-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-header { 
+            font-weight: 700; 
+            color: var(--heading-color); 
+            margin-bottom: 24px; 
+            padding-bottom: 16px; 
+            border-bottom: 1px solid var(--sidebar-border); 
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+        
+        .nav-home { 
+            display: inline-flex; 
+            align-items: center;
+            gap: 6px;
+            color: var(--sidebar-text); 
+            text-decoration: none; 
+            font-size: 0.9rem; 
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-home:hover { color: var(--link-color); }
+
+        /* Toggle Buttons */
+        .sidebar-close-btn {
+            background: transparent;
+            border: 1px solid var(--sidebar-border);
+            color: var(--sidebar-text);
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        .sidebar-close-btn:hover {
+            background: var(--btn-hover-bg);
+            color: var(--text-color);
+        }
+
+        .sidebar-open-btn {
+            position: fixed; top: 24px; left: 24px; z-index: 40;
+            background: var(--bg-color); 
+            border: 1px solid var(--btn-border);
+            color: var(--text-color); 
+            width: 40px; height: 40px; 
+            border-radius: 50%;
+            cursor: pointer; 
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            font-size: 1.2rem;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(-20px);
+        }
+        
+        body.sidebar-hidden .sidebar-open-btn {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(0);
+        }
+        
+        .sidebar-open-btn:hover { transform: scale(1.1); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
 
         /* TOC */
         ul.toc-list { list-style: none; padding-left: 0; margin: 0; }
-        ul.toc-list ul { padding-left: 20px; }
-        li.toc-item { margin-bottom: 8px; }
-        a.toc-link { text-decoration: none; color: var(--sidebar-text); font-size: 0.95em; display: block; padding: 4px 0; line-height: 1.4; }
-        a.toc-link:hover { color: var(--link-hover); text-decoration: underline; }
-        a.toc-link.active { color: var(--active-link); font-weight: bold; }
+        ul.toc-list ul { padding-left: 16px; border-left: 1px solid var(--sidebar-border); margin-left: 4px; }
+        li.toc-item { margin-bottom: 4px; }
+        a.toc-link { 
+            text-decoration: none; 
+            color: var(--sidebar-text); 
+            font-size: 0.9rem; 
+            display: block; 
+            padding: 6px 8px; 
+            border-radius: 6px;
+            line-height: 1.4; 
+            transition: all 0.2s;
+        }
+        a.toc-link:hover { background: rgba(0,0,0,0.03); color: var(--link-color); }
+        body.dark-mode a.toc-link:hover { background: rgba(255,255,255,0.05); }
+        a.toc-link.active { color: var(--active-link); font-weight: 600; background: rgba(225, 112, 85, 0.1); }
 
         /* Main Content Layout */
-        #main { margin-left: 300px; transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1); width: calc(100% - 300px); min-height: 100vh; }
-        body.sidebar-hidden #main { margin-left: 0; width: 100%; }
-        .content-container { max-width: 700px; margin: 0 auto; padding: 60px 40px; line-height: 1.8; font-size: 1.15em; }
-        .book-content img { max-width: 100%; height: auto; display: block; margin: 20px auto; }
-        .book-content h1, .book-content h2 { font-family: -apple-system, sans-serif; margin-top: 1.5em; color: var(--heading-color); }
+        #main { 
+            margin-left: 320px; 
+            transition: margin-left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+        body.sidebar-hidden #main { margin-left: 0; }
+        
+        .content-container { 
+            max-width: 720px; /* Optimal reading width */
+            width: 100%;
+            margin: 0 auto; 
+            padding: 80px 20px 120px; 
+            line-height: 1.8; 
+            font-size: 1.15rem; 
+        }
+        
+        /* Book Content Styling */
+        .book-content img { max-width: 100%; height: auto; display: block; margin: 40px auto; border-radius: 4px; }
+        .book-content h1, .book-content h2, .book-content h3 { 
+            font-family: 'Inter', sans-serif; 
+            margin-top: 2em; 
+            margin-bottom: 1em;
+            color: var(--heading-color); 
+            line-height: 1.3;
+        }
         .book-content p { margin-bottom: 1.5em; text-align: justify; }
+        .book-content a { color: var(--link-color); text-decoration: none; border-bottom: 1px dotted currentColor; }
+        .book-content a:hover { border-bottom-style: solid; }
 
         /* Footer Nav */
-        .chapter-nav { display: flex; justify-content: space-between; margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--nav-border); font-family: -apple-system, sans-serif; }
-        .nav-btn { text-decoration: none; color: var(--link-color); font-weight: bold; padding: 10px 20px; border: 1px solid var(--btn-border); border-radius: 4px; }
-        .nav-btn:hover { background: var(--btn-hover-bg); color: var(--btn-hover-text); }
-        .nav-btn.disabled { opacity: 0.5; pointer-events: none; border-color: var(--disabled-color); color: var(--disabled-color); }
+        .chapter-nav { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            margin-top: 80px; 
+            padding-top: 40px; 
+            border-top: 1px solid var(--nav-border); 
+            font-family: 'Inter', sans-serif; 
+        }
         
-        .theme-toggle { display: block; width: 100%; text-align: left; background: none; border: 1px solid var(--sidebar-border); color: var(--sidebar-text); padding: 8px; margin-bottom: 20px; border-radius: 4px; cursor: pointer; }
+        .nav-btn { 
+            text-decoration: none; 
+            color: var(--btn-text); 
+            font-weight: 600; 
+            padding: 12px 24px; 
+            border: 1px solid var(--btn-border); 
+            border-radius: 50px; 
+            background: var(--btn-bg);
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .nav-btn:hover { background: var(--btn-hover-bg); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .nav-btn.disabled { opacity: 0.4; pointer-events: none; border-color: transparent; background: transparent; }
+        
+        .theme-toggle { 
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; text-align: left; background: none; 
+            border: 1px solid var(--sidebar-border); 
+            color: var(--sidebar-text); 
+            padding: 10px 16px; 
+            margin-bottom: 24px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-family: 'Inter', sans-serif; font-weight: 500;
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover { background: rgba(0,0,0,0.03); color: var(--text-color); }
+        body.dark-mode .theme-toggle:hover { background: rgba(255,255,255,0.05); }
 
         /* HIGHLIGHT MARKER STYLE */
         .highlight-marker {
             background-color: var(--highlight-bg);
             border-bottom: 2px solid var(--highlight-border);
-            color: inherit; cursor: pointer; border-radius: 2px; padding: 0 2px; transition: opacity 0.2s;
+            color: inherit; cursor: pointer; border-radius: 2px; padding: 2px 0; 
+            transition: opacity 0.2s;
         }
-        body.dark-mode .highlight-marker { color: #fff; }
         .highlight-marker:hover { opacity: 0.8; }
 
         /* --- POPUP STYLING --- */
         #translation-popup {
             position: absolute; display: none;
-            background: var(--bg-color); border: 1px solid var(--btn-border);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            padding: 0; border-radius: 8px; z-index: 9999;
-            min-width: 320px; max-width: 400px;
-            font-family: -apple-system, sans-serif; font-size: 0.95em;
+            background: var(--popup-bg); 
+            border: 1px solid var(--nav-border);
+            box-shadow: var(--popup-shadow);
+            padding: 0; border-radius: 12px; z-index: 9999;
+            width: 340px;
+            font-family: 'Inter', sans-serif; font-size: 0.95rem;
             overflow: hidden;
+            animation: popIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
+        
+        @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
         #translation-popup .popup-header {
-            display: flex; align-items: center; gap: 8px;
+            display: flex; align-items: center; gap: 12px;
             cursor: move; user-select: none;
             background: var(--sidebar-bg);
-            padding: 10px 12px; border-bottom: 1px solid var(--sidebar-border);
+            padding: 12px 16px; 
+            border-bottom: 1px solid var(--sidebar-border);
+            font-weight: 600; color: var(--text-color);
+            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;
         }
-        #translation-popup .popup-header label { font-size: 0.85em; white-space: nowrap; cursor: move; }
+        
         #translation-popup select {
             flex: 1; background: var(--bg-color); color: var(--text-color);
-            border: 1px solid var(--sidebar-border); padding: 4px 8px; border-radius: 4px;
+            border: 1px solid var(--sidebar-border); padding: 4px 8px; border-radius: 6px;
+            font-size: 0.85rem; outline: none;
         }
-        #translation-popup .popup-body { padding: 12px; }
         
-        /* Popup Scrollbar */
+        #translation-popup .popup-body { padding: 16px; }
+        
         #translation-popup .popup-content {
-            margin-bottom: 10px; color: var(--text-color); line-height: 1.5;
-            max-height: 200px; overflow-y: auto; padding-right: 5px;
-            scrollbar-width: thin; scrollbar-color: var(--sidebar-border) var(--bg-color);
+            margin-bottom: 16px; color: var(--text-color); line-height: 1.6;
+            max-height: 150px; overflow-y: auto;
+            font-size: 0.95rem;
         }
-        #translation-popup .popup-content::-webkit-scrollbar { width: 6px; }
-        #translation-popup .popup-content::-webkit-scrollbar-track { background: transparent; }
-        #translation-popup .popup-content::-webkit-scrollbar-thumb { background: var(--sidebar-border); border-radius: 3px; }
-
+        
         /* TEXTAREA NOTE */
         #note-input {
-            width: 100%; height: 80px; box-sizing: border-box;
-            background: var(--sidebar-bg); color: var(--text-color);
+            width: 100%; height: 100px; box-sizing: border-box;
+            background: var(--bg-color); color: var(--text-color);
             border: 1px solid var(--sidebar-border);
-            border-radius: 4px; padding: 8px;
-            margin-bottom: 10px; font-family: inherit; resize: vertical;
-            display: none;
+            border-radius: 8px; padding: 12px;
+            margin-bottom: 12px; font-family: inherit; resize: none;
+            display: none; outline: none;
         }
+        #note-input:focus { border-color: var(--link-color); }
 
-        #translation-popup .popup-actions { display: flex; gap: 6px; justify-content: flex-end; border-top: 1px solid var(--nav-border); padding-top: 10px; }
-        #translation-popup button { background: var(--link-color); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
-        #translation-popup button.secondary-btn { background: transparent; color: var(--text-color); border: 1px solid var(--sidebar-border); }
-        #translation-popup button.highlight-btn { background: #fbc02d; color: #000; font-weight: bold; }
-        #translation-popup button.delete-btn { background: #dc3545; color: white; }
+        #translation-popup .popup-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        
+        #translation-popup button { 
+            background: var(--link-color); color: white; border: none; 
+            padding: 8px 16px; border-radius: 6px; cursor: pointer; 
+            font-size: 0.85rem; font-weight: 600;
+            transition: opacity 0.2s;
+        }
         #translation-popup button:hover { opacity: 0.9; }
+        
+        #translation-popup button.secondary-btn { 
+            background: transparent; color: var(--text-color); 
+            border: 1px solid var(--sidebar-border); 
+        }
+        #translation-popup button.secondary-btn:hover { background: var(--sidebar-bg); }
+        
+        #translation-popup button.highlight-btn { background: #fdcb6e; color: #2d3436; }
+        #translation-popup button.delete-btn { background: #ff7675; color: white; }
 
-
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--sidebar-border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--sidebar-text); }
 
     </style>
 </head>
 <body>
 
     <div id="sidebar">
-        <a href="/" class="nav-home">← Back to Library</a>
-        <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
+        <div class="sidebar-header-row">
+            <a href="/" class="nav-home">← Back to Library</a>
+            <button class="sidebar-close-btn" onclick="toggleSidebar()" title="Close Sidebar">«</button>
+        </div>
+        
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span id="theme-icon">🌓</span> Theme
+        </button>
         <div class="nav-header">{{ book.metadata.title }}</div>
         {% macro render_toc(items) %}
             <ul class="toc-list">
@@ -213,72 +373,69 @@
     </div>
 
     <div id="main">
-        <button class="sidebar-toggle-btn" onclick="toggleSidebar()">☰</button>
+        <button class="sidebar-open-btn" onclick="toggleSidebar()" title="Open Sidebar">☰</button>
         <div class="content-container">
             <div class="book-content" id="book-content-area">
                 {{ current_chapter.content | safe }}
             </div>
             <div class="chapter-nav">
-                {% if prev_idx is not none %}<a href="/read/{{ book_id }}/{{ prev_idx }}" class="nav-btn">← Previous</a>{% else %}<span class="nav-btn disabled">← Previous</span>{% endif %}
-                <span style="color: #999; padding: 10px;">Section {{ chapter_index + 1 }} of {{ book.spine|length }}</span>
-                {% if next_idx is not none %}<a href="/read/{{ book_id }}/{{ next_idx }}" class="nav-btn">Next →</a>{% else %}<span class="nav-btn disabled">Next →</span>{% endif %}
+                {% if prev_idx is not none %}
+                    <a href="/read/{{ book_id }}/{{ prev_idx }}" class="nav-btn">← Previous</a>
+                {% else %}
+                    <span class="nav-btn disabled">← Previous</span>
+                {% endif %}
+                
+                <span style="color: var(--sidebar-text); font-size: 0.9rem;">
+                    {{ chapter_index + 1 }} / {{ book.spine|length }}
+                </span>
+                
+                {% if next_idx is not none %}
+                    <a href="/read/{{ book_id }}/{{ next_idx }}" class="nav-btn">Next →</a>
+                {% else %}
+                    <span class="nav-btn disabled">Next →</span>
+                {% endif %}
             </div>
         </div>
     </div>
 
     <div id="translation-popup">
         <div class="popup-header" id="popup-drag-handle">
-            <label id="popup-title">Tools:</label>
+            <span style="flex:1;">Tools</span>
             <select id="target-lang">
                 <option value="id">Indonesian</option>
                 <option value="en">English</option>
-                <option value="zh-CN">Chinese (Simplified)</option>
-                <option value="zh-TW">Chinese (Traditional)</option>
+                <option value="zh-CN">Chinese</option>
                 <option value="ja">Japanese</option>
                 <option value="ko">Korean</option>
                 <option value="es">Spanish</option>
                 <option value="fr">French</option>
                 <option value="de">German</option>
-                <option value="ar">Arabic</option>
-                <option value="ru">Russian</option>
-                <option value="pt">Portuguese</option>
-                <option value="it">Italian</option>
-                <option value="nl">Dutch</option>
-                <option value="tr">Turkish</option>
-                <option value="vi">Vietnamese</option>
-                <option value="th">Thai</option>
-                <option value="hi">Hindi</option>
             </select>
         </div>
         <div class="popup-body">
             <div class="popup-content" id="popup-text">Select text to translate or highlight.</div>
             
-            <textarea id="note-input" placeholder="Tulis catatan Anda di sini..."></textarea>
+            <textarea id="note-input" placeholder="Write your note here..."></textarea>
 
             <div class="popup-actions" id="default-actions">
                 <button class="highlight-btn" onclick="modeHighlight()">🖊 Highlight</button>
                 <button onclick="translateSelection()">Translate</button>
-                <button class="secondary-btn" onclick="hidePopup()">Close</button>
+                <button class="secondary-btn" onclick="hidePopup()">✕</button>
             </div>
 
             <div class="popup-actions" id="note-actions" style="display:none;">
                 <button class="delete-btn" id="btn-delete" onclick="deleteHighlight()" style="display:none; margin-right:auto;">Delete</button>
-                <button class="highlight-btn" onclick="saveHighlight()">Save Note</button>
+                <button class="highlight-btn" onclick="saveHighlight()">Save</button>
                 <button class="secondary-btn" onclick="cancelNote()">Cancel</button>
             </div>
         </div>
     </div>
 
-
-
     <script>
         // --- CONFIG & STATE ---
         const spineMap = { {% for ch in book.spine %} "{{ ch.href }}": {{ ch.order }}, {% endfor %} };
         const STORAGE_KEY = `highlights_{{ book_id }}_{{ chapter_index }}`;
-        const BOOK_ID = "{{ book_id }}";
-        const CHAPTER_INDEX = {{ chapter_index }};
         
-        // Variable References for UI
         const els = {
             popup: document.getElementById('translation-popup'),
             header: document.getElementById('popup-drag-handle'),
@@ -308,6 +465,12 @@
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            updateThemeIcon();
+        }
+        
+        function updateThemeIcon() {
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('theme-icon').textContent = isDark ? '🌙' : '☀️';
         }
         
         function toggleSidebar() {
@@ -315,11 +478,11 @@
             localStorage.setItem('sidebar-hidden', document.body.classList.contains('sidebar-hidden') ? 'true' : 'false');
         }
 
-        // Restore Theme/Sidebar State
+        // Restore State
         if(localStorage.getItem('theme')==='dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.body.classList.add('dark-mode');
         if(localStorage.getItem('sidebar-hidden')==='true') document.body.classList.add('sidebar-hidden');
         if(localStorage.getItem('translation-lang')) els.langSelect.value = localStorage.getItem('translation-lang');
-
+        updateThemeIcon();
 
         // --- DRAG LOGIC ---
         els.header.onmousedown = e => {
@@ -332,20 +495,17 @@
         document.onmousemove = e => {
             if(!state.isDragging) return;
             e.preventDefault();
-            const x = e.clientX - state.dragOffset.x + (window.pageXOffset || document.documentElement.scrollLeft);
-            const y = e.clientY - state.dragOffset.y + (window.pageYOffset || document.documentElement.scrollTop);
+            const x = e.clientX - state.dragOffset.x + window.pageXOffset;
+            const y = e.clientY - state.dragOffset.y + window.pageYOffset;
             els.popup.style.left = x + 'px';
             els.popup.style.top = y + 'px';
         };
         document.onmouseup = () => { state.isDragging = false; };
 
-
         // --- SELECTION & CLICK LOGIC ---
         document.addEventListener('mouseup', (e) => {
             if(state.isDragging) return;
             if(els.popup.contains(e.target)) return;
-            
-
 
             // 1. Click on Existing Highlight
             if(e.target.classList.contains('highlight-marker')) {
@@ -365,13 +525,13 @@
                 // Position Popup
                 const range = selection.getRangeAt(0);
                 const rect = range.getBoundingClientRect();
-                const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-                const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+                const scrollX = window.pageXOffset;
+                const scrollY = window.pageYOffset;
                 
                 els.popup.style.left = `${rect.left + scrollX}px`;
-                els.popup.style.top = `${rect.bottom + scrollY + 10}px`;
+                els.popup.style.top = `${rect.bottom + scrollY + 12}px`;
                 els.popup.style.display = 'block';
-                els.text.innerText = "Selected: \"" + text.substring(0, 20) + "...\"";
+                els.text.innerText = "Selected: \"" + text.substring(0, 30) + (text.length>30?"...":"") + "\"";
             } else {
                 hidePopup();
             }
@@ -444,22 +604,13 @@
                     span.id = hlId;
                     span.onclick = function(e) { e.stopPropagation(); openExistingNote(this); };
                     
-                    // Apply highlight
                     range.surroundContents(span);
-                    
-                    // Force immediate visual update
-                    span.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--highlight-bg').trim();
-                    span.style.borderBottom = '2px solid ' + getComputedStyle(document.documentElement).getPropertyValue('--highlight-border').trim();
-                    
-                    // Trigger reflow to ensure immediate rendering
-                    void span.offsetHeight;
                 } catch (e) {
-                    alert("Mohon pilih teks dalam satu paragraf saja (tidak lintas elemen).");
+                    alert("Please select text within a single paragraph.");
                     return;
                 }
             }
 
-            // Save & Close
             saveToStorage(hlId, state.selectedText, noteContent);
             hidePopup();
         }
@@ -473,27 +624,22 @@
             state.highlightId = id;
             els.input.value = item ? item.note : "";
 
-            // Position Popup
             const rect = element.getBoundingClientRect();
-            const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-            const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-            els.popup.style.left = `${rect.left + scrollX}px`;
-            els.popup.style.top = `${rect.bottom + scrollY + 10}px`;
+            els.popup.style.left = `${rect.left + window.pageXOffset}px`;
+            els.popup.style.top = `${rect.bottom + window.pageYOffset + 10}px`;
             els.popup.style.display = 'block';
 
             modeHighlight();
-            els.btnDel.style.display = 'inline-block'; // Show delete button
+            els.btnDel.style.display = 'inline-block'; 
         }
 
         function deleteHighlight() {
             if (!state.highlightId) return;
             
-            // Remove from Storage
             const data = loadFromStorage();
             delete data[state.highlightId];
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
-            // Remove from DOM
             const el = document.getElementById(state.highlightId);
             if (el) {
                 const parent = el.parentNode;
@@ -516,22 +662,20 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
 
-        // --- RESTORE LOGIC (ROBUST) ---
+        // --- RESTORE LOGIC ---
         function restoreHighlights() {
             const data = loadFromStorage();
             const root = els.contentArea;
             if (!root) return;
 
             Object.keys(data).forEach(id => {
-                if (document.getElementById(id)) return; // Already restored
+                if (document.getElementById(id)) return;
                 const item = data[id];
                 
-                // TreeWalker to find text node
                 const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
                 let node;
                 while(node = walker.nextNode()) {
                     const idx = node.nodeValue.indexOf(item.text);
-                    // Ensure we don't wrap inside an existing highlight
                     if(idx !== -1 && node.parentNode.className !== 'highlight-marker') {
                         try {
                             const range = document.createRange();
@@ -544,18 +688,33 @@
                             span.onclick = function(e) { e.stopPropagation(); openExistingNote(this); };
                             
                             range.surroundContents(span);
-                            break; // Stop after finding match
+                            break;
                         } catch(e) { console.warn("Restore skip", id); }
                     }
                 }
             });
         }
 
-        // Run Restore
         setTimeout(restoreHighlights, 500);
 
-
-
+        // Keyboard Navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+            
+            if (e.key === 'ArrowLeft') {
+                const prevLink = document.querySelector('a[href*="/read/"][href$="/{{ (chapter_index - 1) if chapter_index > 0 else -1 }}"]');
+                if (prevLink && {{ 'true' if prev_idx is not none else 'false' }}) {
+                    window.location.href = '/read/{{ book_id }}/{{ prev_idx if prev_idx is not none else 0 }}';
+                }
+            }
+            
+            if (e.key === 'ArrowRight') {
+                const nextLink = document.querySelector('a[href*="/read/"][href$="/{{ (chapter_index + 1) if next_idx is not none else -1 }}"]');
+                if (nextLink && {{ 'true' if next_idx is not none else 'false' }}) {
+                    window.location.href = '/read/{{ book_id }}/{{ next_idx if next_idx is not none else 0 }}';
+                }
+            }
+        });
     </script>
 </body>
 </html>
